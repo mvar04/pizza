@@ -1,0 +1,46 @@
+body {
+    background-color: #b2dfdb; 
+    font-family: sans-serif;
+}
+button {
+    background-color: #078974; 
+    color: white;
+    margin: 5px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 20px; 
+}
+button:hover {
+    background-color: #056463; 
+}
+input {
+    padding: 10px 20px;  
+    border-radius: 20px;
+    border: none;
+    margin: 5px;
+}
+.pizza_name{
+    font-size: 30px;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+th, td {
+    border: 1px solid #888888;
+    text-align: left;
+    padding: 8px;
+}
+th {
+    background-color: #60e6cb;
+}
+ul {
+    list-style: none;
+    padding: 0;
+}
+.toppingSelectionForm,
+.sizeSelectionForm,
+.baseSelectionForm,
+.quantityInput {
+    display: none;
+}

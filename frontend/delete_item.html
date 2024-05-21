@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delete Pizza, Base, or Topping</title>
+    <link rel = "stylesheet" href = 'style.css'>
+</head>
+<body>
+    <h1>Delete Pizza, Base, or Topping</h1>
+
+    <h2>Pizzas</h2>
+    <ul id="pizzaList"></ul>
+    <button onclick="deleteSelectedPizzas()">Delete Selected Pizzas</button>
+
+    <h2>Bases</h2>
+    <ul id="baseList"></ul>
+    <button onclick="deleteSelectedBases()">Delete Selected Bases</button>
+
+    <h2>Toppings</h2>
+    <ul id="toppingList"></ul>
+    <button onclick="deleteSelectedToppings()">Delete Selected Toppings</button>
+
+    <script>
+        // Function to delete selected pizzas
+        function deleteSelectedPizzas() {
+            const selectedPizzas = document.querySelectorAll('#pizzaList input[type="checkbox"]:checked');
+            const pizzaCodes = Array.from(selectedPizzas).map(pizza => pizza.value);
+
+            const deleteRequests = pizzaCodes.map(pizzaCode => {
+                return fetch("http://localhost:3000/delete", {
+                    method: "POST",
+                    body: JSON.stringify({
+                        table: "pizza",
+                        value: pizzaCode
+                    }),
+                    headers: {
+                        "Content-Type": "application/json; charset=UTF-8"
+                    }
+                });
+            })
+            Promise.all(deleteRequests)
+                .then(responses => {
+                    // Check if all responses are successful
+                    const allSuccess = responses.every(response => response.ok);
+                    if (allSuccess) {
+                        // Redirect after successful deletion
+                        window.location.href = "admin.html";
+                    } else {
+                        // Handle error responses if needed
+                        console.error('Some delete requests failed');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                })
+        
+        }
+
+        // Function to delete selected bases
+        function deleteSelectedBases() {
+            const selectedBases = document.querySelectorAll('#baseList input[type="checkbox"]:checked');
+            const baseCodes = Array.from(selectedBases).map(base => base.value);
+            const deleteRequests = baseCodes.map(baseCode => {
+                return fetch("http://localhost:3000/delete", {
+                    method: "POST",
+                    body: JSON.stringify({
+                        table: "pizza_base",
+                        value: baseCode
+                    }),
+                    headers: {
+                        "Content-Type": "application/json; charset=UTF-8"
+                    }
+                });
+            })
+            Promise.all(deleteRequests)
+                .then(responses => {
+                    // Check if all responses are successful
+                    const allSuccess = responses.every(response => response.ok);
+                    if (allSuccess) {
+                        // Redirect after successful deletion
+                        window.location.href = "admin.html";
+                    } else {
+                        // Handle error responses if needed
+                        console.error('Some delete requests failed');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                })
+        
+        }
+        
+
+        // Function to delete selected toppings
+        function deleteSelectedToppings() {
+            const selectedToppings = document.querySelectorAll('#toppingList input[type="checkbox"]:checked');
+            const toppingCodes = Array.from(selectedToppings).map(topping => topping.value);
+
+            const deleteRequests = toppingCodes.map(toppingCode => {
+                return fetch("http://localhost:3000/delete", {
+                    method: "POST",
+                    body: JSON.stringify({
+                        table: "topping",
+                        value: toppingCode
+                    }),
+                    headers: {
+                        "Content-Type": "application/json; charset=UTF-8"
+                    }
+                });
+            })
+            Promise.all(deleteRequests)
+                .then(responses => {
+                    // Check if all responses are successful
+                    const allSuccess = responses.every(response => response.ok);
+                    if (allSuccess) {
+                        // Redirect after successful deletion
+                        window.location.href = "admin.html";
+                    } else {
+                        // Handle error responses if needed
+                        console.error('Some delete requests failed');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                })
+        
+        }
+
+        // Fetch menu data from server
+        fetch('http://localhost:3000/menu')
+            .then(response => response.json())
+            .then(data => {
+                // Populate pizza list
+                const pizzaList = document.getElementById('pizzaList');
+                data.pizza.forEach(pizza => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `<input type="checkbox" id="pizza_${pizza.pizza_code}" name="pizza[]" value="${pizza.pizza_code}">
+                                    <label for="pizza_${pizza.pizza_code}">${pizza.name}</label>`;
+                    pizzaList.appendChild(li);
+                });
+
+                // Populate base list
+                const baseList = document.getElementById('baseList');
+                data.pizza_base.forEach(base => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `<input type="checkbox" id="base_${base.base_code}" name="base[]" value="${base.base_code}">
+                                    <label for="base_${base.base_code}">${base.base_name}</label>`;
+                    baseList.appendChild(li);
+                });
+
+                // Populate topping list
+                const toppingList = document.getElementById('toppingList');
+                data.topping.forEach(topping => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `<input type="checkbox" id="topping_${topping.ingredient_code}" name="topping[]" value="${topping.ingredient_code}">
+                                    <label for="topping_${topping.ingredient_code}">${topping.ingredient_name}</label>`;
+                    toppingList.appendChild(li);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching menu:', error);
+            });
+    </script>
+</body>
+</html>

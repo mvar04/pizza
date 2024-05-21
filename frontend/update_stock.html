@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Update Ingredient Stock</title>
+</head>
+<body>
+    <h1>Update Ingredient Stock</h1>
+    <label for="ingredientName">Ingredient Name:</label>
+    <input type="text" id="ingredientName" name="ingredientName" required><br><br>
+    <label for="newStock">New Stock:</label>
+    <input type="number" id="newStock" name="newStock" required><br><br>
+    <button id="updateStockButton">Update Stock</button>
+
+    <script>
+        // Button click event listener
+        document.getElementById('updateStockButton').addEventListener('click', function() {
+            const ingredientName = document.getElementById('ingredientName').value;
+            const newStock = document.getElementById('newStock').value;
+
+            // Perform validation here if needed
+
+            const data = {
+                ingredientName: ingredientName,
+                newStock: newStock
+            };
+
+            fetch('http://localhost:3000/update-stock', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Redirect to admin.html upon successful update
+                    window.location.href = 'admin.html';
+                } else {
+                    console.error('Failed to update stock:', response.statusText);
+                }
+            })
+            .catch(error => {
+                console.error('Error updating stock:', error);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Data</title>
+    <link rel = "stylesheet" href = 'style.css'>
+    <script>
+        window.onload = function() {
+            // Set the empty option as default
+            var dropdown = document.getElementById("table_select");
+            dropdown.value = "";
+            showFields(); // Call showFields() to hide all fields initially
+        };
+
+        function showFields() {
+            var selectedTable = document.getElementById("table_select").value;
+            var pizzaFields = document.getElementById("pizza_fields");
+            var ingredientFields = document.getElementById("ingredient_fields");
+            var pizzaBaseFields = document.getElementById("pizza_base_fields");
+            var toppingFields = document.getElementById("topping_fields")
+
+            if (selectedTable === "Pizza") {
+                pizzaFields.style.display = "block";
+                ingredientFields.style.display = "none";
+                pizzaBaseFields.style.display = "none";
+                toppingFields.style.display = "none";
+            } else if (selectedTable === "Ingredient") {
+                pizzaFields.style.display = "none";
+                ingredientFields.style.display = "block";
+                pizzaBaseFields.style.display = "none";
+                toppingFields.style.display = "none";
+            } else if (selectedTable === "Pizza_Base") {
+                pizzaFields.style.display = "none";
+                ingredientFields.style.display = "none";
+                pizzaBaseFields.style.display = "block";
+                toppingFields.style.display = "none";
+            } else if(selectedTable === "Topping"){
+                pizzaFields.style.display = "none";
+                ingredientFields.style.display = "none";
+                pizzaBaseFields.style.display = "none";
+                toppingFields.style.display = "block";
+            } else {
+                pizzaFields.style.display = "none";
+                ingredientFields.style.display = "none";
+                pizzaBaseFields.style.display = "none";
+                toppingFields.style.display = "none";
+            }
+        }
+        function submitData() {
+            var selectedTable = document.getElementById("table_select").value;
+            let formData = {};
+
+            if (selectedTable === "Pizza") {
+                formData["Name"] = document.getElementById("name").value;
+                formData["Description"] = document.getElementById("description").value;
+                formData["Cost"] = document.getElementById("cost").value;
+                console.log(formData)
+                fetch("http://localhost:3000/pizza_add", {
+                    method: "POST",
+                    body: JSON.stringify(formData),
+                    headers: {
+                        "Content-Type": "application/json; charset=UTF-8"
+                    }
+                }).then(response => {
+                    if (response.ok) {
+                        // Redirect only after successful response
+                        window.location.href = "admin.html";
+                    } else {
+                        // Handle error responses if needed
+                        console.error('Error:', response.statusText);
+                    }
+                })
+            } else if (selectedTable === "Ingredient") {
+                formData["Ingredient_Name"] = document.getElementById("ingredient_name").value;
+                formData["Stock"] = document.getElementById("stock").value;
+
+                fetch("http://localhost:3000/ingredient_add", {
+                    method: "POST",
+                    body: JSON.stringify(formData),
+                    headers: {
+                        "Content-Type": "application/json; charset=UTF-8"
+                    }
+                }).then(response => {
+                    if (response.ok) {
+                        // Redirect only after successful response
+                        window.location.href = "admin.html";
+                    } else {
+                        // Handle error responses if needed
+                        console.error('Error:', response.statusText);
+                    }
+                })
+            } else if (selectedTable === "Pizza_Base") {
+                formData["Base_Name"] = document.getElementById("base_name").value;
+                formData["Extra_Cost"] = document.getElementById("base_extra_cost").value;
+                fetch("http://localhost:3000/base_add", {
+                    method: "POST",
+                    body: JSON.stringify(formData),
+                    headers: {
+                        "Content-Type": "application/json; charset=UTF-8"
+                    }
+                }).then(response => {
+                    if (response.ok) {
+                        // Redirect only after successful response
+                        window.location.href = "admin.html";
+                    } else {
+                        // Handle error responses if needed
+                        console.error('Error:', response.statusText);
+                    }
+                })
+            } else if (selectedTable === "Topping") {
+                formData["ingredient_code"] = document.getElementById("ingredient_code").value;
+                formData["Extra_Cost"] = document.getElementById("topping_extra_cost").value;
+                fetch("http://localhost:3000/topping_add", {
+                    method: "POST",
+                    body: JSON.stringify(formData),
+                    headers: {
+                        "Content-Type": "application/json; charset=UTF-8"
+                    }
+                }).then(response => {
+                    if (response.ok) {
+                        // Redirect only after successful response
+                        window.location.href = "admin.html";
+                    } else {
+                        // Handle error responses if needed
+                        console.error('Error:', response.statusText);
+                    }
+                })
+            }
+        }
+        
+    </script>
+</head>
+<body>
+    <h2>Add Data to Tables</h2>
+    <form>
+        <label for="table_select">Select Table:</label>
+        <select id="table_select" name="table_select" onchange="showFields()">
+            <option value="">Select Table...</option>
+            <option value="Pizza">Pizza</option>
+            <option value="Ingredient">Ingredient</option>
+            <option value="Pizza_Base">Pizza Base</option>
+            <option value="Topping">Topping</option>
+        </select>
+        <br><br>
+
+        <div id="pizza_fields" style="display: none;">
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" autocomplete="off"><br><br>
+            
+            <label for="description">Description:</label>
+            <input type="text" id="description" name="description"><br><br>
+            
+            <label for="cost">Cost:</label>
+            <input type="text" id="cost" name="cost"><br><br>
+        </div>
+
+        <div id="ingredient_fields" style="display: none;">
+            <label for="ingredient_name">Ingredient Name:</label>
+            <input type="text" id="ingredient_name" name="ingredient_name"><br><br>
+            
+            <label for="stock">Stock:</label>
+            <input type="text" id="stock" name="stock"><br><br>
+
+        </div>
+
+        <div id="topping_fields" style="display: none;">
+            <label for="ingredient_code">Ingredient Code:</label>
+            <input type="text" id="ingredient_code" name="ingredient_code"><br><br>
+            
+            <label for="topping_extra_cost">Cost: </label>
+            <input type="text" id="topping_extra_cost" name="topping_extra_cost"><br><br>
+
+            <label for="quantity">Quantity:</label>
+            <input type="number" id="quantity" name="quantity"><br><br>
+        </div>
+
+        <div id="pizza_base_fields" style="display: none;">
+            <label for="base_name">Base Name:</label>
+            <input type="text" id="base_name" name="base_name"><br><br>
+            
+            <label for="base_extra_cost">Extra Cost:</label>
+            <input type="number" id="base_extra_cost" name="base_extra_cost"><br><br>
+        </div> 
+    </form>
+    <button type = "button" onclick="submitData()">Submit</button>
+</body>
+</html>

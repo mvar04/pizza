@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pizza Menu</title>
+    <link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+    <h1>Pizza Menu</h1>
+
+        <form id="pizzaSelectionForm">
+        <!-- Dynamically populated with pizzas from the backend -->
+        <label for="username">Username:</label><br>
+        <input type="text" id="username" name="username" required><br>
+    </form>
+
+    <!-- Submit Button -->
+    <button type="button" onclick="submitOrder()">Place Order</button>
+
+    <script>
+        // Function to fetch pizza menu and populate the forms
+        async function fetchPizzaMenu() {
+            try {
+                const response = await fetch('http://localhost:3000/menu');
+                const data = await response.json();
+                const pizzas = data.pizza;
+                const toppings = data.topping;
+                const pizzaSelectionForm = document.getElementById('pizzaSelectionForm');
+
+                pizzas.forEach(pizza => {
+                    const container = document.createElement('div');
+                    container.innerHTML = `
+                        <input type="checkbox" name="pizza" value="${pizza.pizza_code}" onchange="toggleForms(this)">
+                        <label><span class = 'pizza_name'>${pizza.name}</span><br>${pizza.description}</label>
+                        <input type="number" name="quantity" value="1" min="1" class="quantityInput">
+                        <div>
+                            <!-- Toppings Selection -->
+                            <form class="toppingSelectionForm">
+                                <h3>Toppings:</h3>
+                                <!-- Loop through topping items and create checkboxes -->
+                                ${toppings.map(topping => `
+                                    <input type="checkbox" name="topping" value="${topping.ingredient_code}">
+                                    ${topping.ingredient_name} (+${topping.extra_cost})<br>
+                                `).join('')}
+                            </form>
+                            
+                            <!-- Size Selection -->
+                            <form class="sizeSelectionForm">
+                                <h3>Size:</h3>
+                                <input type="radio" name="size" value="R" checked> Regular
+                                <input type="radio" name="size" value="L"> Large
+                            </form>
+                            <!-- Base Selection -->
+                            <form class="baseSelectionForm">
+                                <h3>Base:</h3>
+                                <!-- Loop through pizza base items and create radio buttons -->
+                                ${data.pizza_base.map(base => `
+                                    <input type="radio" name="base" value="${base.base_code}">
+                                    ${base.base_name} (+${base.extra_cost})<br>
+                                `).join('')}
+                            </form>
+                            <br>
+                        </div>
+                    `;
+                    pizzaSelectionForm.appendChild(container);
+                });
+            } catch (error) {
+                console.error('Error fetching pizza menu:', error);
+            }
+        }
+
+        // Call the fetchPizzaMenu function when the page loads
+        window.onload = fetchPizzaMenu;
+
+        // Function to toggle display of topping, size, and base forms based on pizza selection
+        function toggleForms(checkbox) {
+            const container = checkbox.parentNode.querySelector('div');
+            if (checkbox.checked) {
+                container.querySelector('.toppingSelectionForm').style.display = 'block';
+                container.querySelector('.sizeSelectionForm').style.display = 'block';
+                container.querySelector('.baseSelectionForm').style.display = 'block';
+                checkbox.parentNode.querySelector('.quantityInput').style.display = 'block';
+            } else {
+                container.querySelector('.toppingSelectionForm').style.display = 'none';
+                container.querySelector('.sizeSelectionForm').style.display = 'none';
+                container.querySelector('.baseSelectionForm').style.display = 'none';
+                checkbox.parentNode.querySelector('.quantityInput').style.display = 'none';
+            }
+        }
+
+
+    function submitOrder() {
+        // Retrieve selected pizzas
+        let final_order
+        const selectedPizzas = [];
+        const pizzaForms = document.querySelectorAll('#pizzaSelectionForm input[name="pizza"]:checked');
+        pizzaForms.forEach(pizzaForm => {
+            const pizzaCode = parseInt(pizzaForm.value);
+            const container = pizzaForm.parentNode.querySelector('.toppingSelectionForm');
+            if (container) {
+                const toppings = Array.from(container.querySelectorAll('input[type="checkbox"]:checked')).map(checkbox => parseInt(checkbox.value));
+
+                const sizeForm = pizzaForm.parentNode.querySelector('.sizeSelectionForm');
+                const selectedSize = sizeForm.querySelector('input[name="size"]:checked').value;
+
+                const baseForm = pizzaForm.parentNode.querySelector('.baseSelectionForm');
+                const selectedBase = parseInt(baseForm.querySelector('input[name="base"]:checked').value)
+
+                const quantity = parseInt(pizzaForm.parentNode.querySelector('input[name="quantity"]').value);
+                selectedPizzas.push({
+                    pizzaCode: pizzaCode,
+                    toppings: toppings,
+                    size: selectedSize,
+                    baseCode: selectedBase,
+                    quantity: quantity
+                });
+
+            } else {
+                console.error('Toppings selection form not found for pizza:', pizzaName);
+            }
+        });
+        final_order = {
+            TableNo: sessionStorage.username,
+            CustName: document.getElementById("username").value,
+            Items: selectedPizzas
+        }
+       fetch("http://localhost:3000/new_order", {
+                method: "POST",
+                body: JSON.stringify(final_order),
+                headers: {
+                    "Content-Type": "application/json; charset=UTF-8"
+                }
+        }).then(response => {
+            if (response.ok) {
+                // Redirect only after successful response
+                window.location.href = "full_order.html";
+            } else {
+                // Handle error responses if needed
+                console.error('Error:', response.statusText);
+            }
+        })
+
+    }
+    </script>
+</body>
+</html>

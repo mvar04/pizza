@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Status</title>
+    <link rel = "stylesheet" href = "style.css">
+</head>
+<body>
+
+<button onclick="window.location.href = 'statistics.html';">View Stats</button>
+<button onclick="window.location.href = 'new_item.html';">Add New Item</button>
+<button onclick="window.location.href = 'delete_item.html';">Delete Item</button>
+<button onclick="window.location.href = 'update_stock.html';">Update Stock</button>
+
+<h2>New Orders</h2>
+<table id="newOrders">
+    <thead>
+        <tr>
+            <th>Order Number</th>
+            <th>Pizza Code</th>
+            <th>Size</th>
+            <th>Base Code</th>
+            <th>Quantity</th>
+            <th>Toppings</th>
+            <th>Select</th> <!-- Added checkbox column -->
+        </tr>
+    </thead>
+    <tbody id="newOrdersBody">
+        <!-- New orders will be dynamically added here -->
+    </tbody>
+</table>
+<button id="submitNewOrders">Submit New Orders</button>
+
+<h2>Active Orders</h2>
+<table id="activeOrders">
+    <thead>
+        <tr>
+            <th>Order Number</th>
+            <th>Pizza Code</th>
+            <th>Size</th>
+            <th>Base Code</th>
+            <th>Quantity</th>
+            <th>Toppings</th>
+            <th>Select</th> <!-- Added checkbox column -->
+        </tr>
+    </thead>
+    <tbody id="activeOrdersBody">
+        <!-- Active orders will be dynamically added here -->
+    </tbody>
+</table>
+<button id="submitActiveOrders">Submit Active Orders</button>
+
+<h2>Complete Orders</h2>
+<table id="completeOrders">
+    <thead>
+        <tr>
+            <th>Order Number</th>
+            <th>Pizza Code</th>
+            <th>Size</th>
+            <th>Base Code</th>
+            <th>Quantity</th>
+            <th>Toppings</th>
+        </tr>
+    </thead>
+    <tbody id="completeOrdersBody">
+        <!-- Complete orders will be dynamically added here -->
+    </tbody>
+</table>
+
+<script>
+    // Function to create and append a checkbox element to a row
+    function addCheckboxToRow(row) {
+        const cell = document.createElement("td");
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        cell.appendChild(checkbox);
+        row.appendChild(cell);
+    }
+
+    // Fetch data from server and populate tables
+    async function fetchData(status, tableId, tbodyId) {
+        const response = await fetch(`http://localhost:3000/all_orders/${status}`);
+        const data = await response.json();
+        const table = document.getElementById(tableId);
+        const tbody = document.getElementById(tbodyId);
+        console.log(status)
+        console.log(data)
+        // Clear previous data
+        tbody.innerHTML = "";
+        
+        // Populate table
+        data.forEach(order => {
+            let lastRow
+            Object.values(order).forEach(value => {
+                const row = document.createElement("tr");
+                lastRow = row
+                Object.values(value).forEach(sub => {
+                    if(sub !== "New" && sub !== "Active" && sub !== "Complete"){
+                        const cell = document.createElement("td");
+                        cell.textContent = sub;
+                        row.appendChild(cell); 
+                    }
+                })
+                
+                tbody.appendChild(row);  
+            });
+            if(status !== "Complete"){
+                addCheckboxToRow(lastRow)
+            }
+        });
+    }
+
+    // Submit selected new orders
+    document.getElementById("submitNewOrders").addEventListener("click", function() {
+        submitOrders("newOrdersBody");
+    });
+
+    // Submit selected active orders
+    document.getElementById("submitActiveOrders").addEventListener("click", function() {
+        submitOrders("activeOrdersBody");
+    });
+
+    function submitOrders(tbodyId) {
+    const checkboxes = document.querySelectorAll(`#${tbodyId} input[type="checkbox"]:checked`);
+    const selectedOrders = Array.from(checkboxes).map(checkbox => {
+        const row = checkbox.closest("tr");
+        const orderNumber = row.querySelector("td:nth-child(1)").textContent;
+        if (tbodyId === "newOrdersBody") {
+            return fetch("http://localhost:3000/set_active", {
+                method: "POST",
+                body: JSON.stringify({ "orderNumber": orderNumber }),
+                headers: {
+                    "Content-Type": "application/json; charset=UTF-8"
+                }
+            });
+        } else if (tbodyId === "activeOrdersBody") {
+            return fetch("http://localhost:3000/set_complete", {
+                method: "POST",
+                body: JSON.stringify({ "orderNumber": orderNumber }),
+                headers: {
+                    "Content-Type": "application/json; charset=UTF-8"
+                }
+            });
+        }
+    });
+
+    // Wait for all POST requests to complete
+    Promise.all(selectedOrders)
+        .then(() => {
+            // All POST requests are done, navigate to admin.html
+            window.location.href = 'admin.html';
+        })
+        .catch(error => {
+            console.error('Error submitting orders:', error);
+            // Handle errors if needed
+        });
+}
+
+
+    // Populate tables on page load
+    window.onload = function() {
+        fetchData('New', 'newOrders', 'newOrdersBody');
+        fetchData('Active', 'activeOrders', 'activeOrdersBody');
+        fetchData('Complete', 'completeOrders', 'completeOrdersBody');
+    };
+</script>
+
+
+</body>
+</html>

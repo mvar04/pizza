@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statistics</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<button onclick="window.location.href = 'admin.html';">Back</button>
+<script>
+function createHtmlTable(jsonData) {
+    // Create table element
+    var table = document.createElement('table');
+    
+    // Create table header
+    var thead = document.createElement('thead');
+    var headerRow = document.createElement('tr');
+    for (var key in jsonData[0]) {
+        var th = document.createElement('th');
+        th.textContent = key;
+        headerRow.appendChild(th);
+    }
+    thead.appendChild(headerRow);
+    table.appendChild(thead);
+
+    // Create table body
+    var tbody = document.createElement('tbody');
+    jsonData.forEach(function(obj) {
+        var row = document.createElement('tr');
+        for (var key in obj) {
+            var cell = document.createElement('td');
+            cell.textContent = obj[key];
+            row.appendChild(cell);
+        }
+        tbody.appendChild(row);
+    });
+    table.appendChild(tbody);
+
+    return table;
+}
+async function accessValues(){
+    const res = await fetch("http://localhost:3000/stats")
+    const data = await res.json()
+    for(let sub in data){
+        document.body.appendChild(createHtmlTable(data[sub]));
+    }
+}
+
+window.onload = function() {
+    accessValues();
+};
+</script>
+
+</body>
+</html>
